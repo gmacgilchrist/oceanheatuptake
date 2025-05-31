@@ -7,8 +7,8 @@ import utils.geo as geo
 import glob
 import os
 
-variable = 'sos'
-modelconfigs = ['COSMOS/COSMOS-landveg_r2413','CESM/CESM1.2_CAM5','GFDL/GFDL_CM2.1','INMCM/INM-CM4-8','MIROC/MIROC4m','NorESM1_F','HadCM3/HadCM3BL_M2.1aN','HadCM3/HadCM3B_M2.1aN']
+variable = 'vo'
+modelconfigs = ['CESM/CESM1.2_CAM5']#['COSMOS/COSMOS-landveg_r2413','CESM/CESM1.2_CAM5','GFDL/GFDL_CM2.1','INMCM/INM-CM4-8','MIROC/MIROC4m','NorESM1_F','HadCM3/HadCM3BL_M2.1aN','HadCM3/HadCM3B_M2.1aN']
 regrid = True
 overwrite = True
 averaging = 'mean'
@@ -17,14 +17,14 @@ averaging = 'mean'
 rootdir = '/Volumes/DeepMIP_Model_Output_read/DeepMIP-Eocene/User_Model_Database_v1.0'
 
 ### VARIABLE NAMES
-latnames = ['TLAT','lat','geolat_t','latitude','nav_lat','latitude_1']
-lonnames = ['TLONG','lon','geolon_t','longitude','nav_lon','longitude_1']
+latnames = ['TLAT','lat','geolat_t','latitude','nav_lat','latitude_1','ULAT','VLAT']
+lonnames = ['TLONG','lon','geolon_t','longitude','nav_lon','longitude_1','ULONG','VLONG']
 timenames = ['month','time','t','time_counter']
 znames = ['z_t','st_ocean','lev','depth','depth_1','level','plev','p','sfc']
 
 ### LOAD PREDEFINED REGULAR GRID
 # created via generate_grid.py
-if variable in ['tos','thetao','so','sos']:
+if variable in ['tos','thetao','so','sos','uo','vo']:
     dlon,dlat = 1,1
     zlevel = 'depth'
 elif variable in ['tas','ta']:
@@ -72,7 +72,6 @@ for modelconfig in modelconfigs:
         experiment = path_elements[nexperiment]
         print(config,end=', ')
         print(experiment)
-        print(ds)
 
         # change variable names
         # lat
@@ -119,7 +118,6 @@ for modelconfig in modelconfigs:
         # drop all other variables
         ds = ds[variable].to_dataset()
 
-        print(ds)
         return ds
 
     ### OPEN DATASET
@@ -127,7 +125,10 @@ for modelconfig in modelconfigs:
 
     ### SAVE
     savename = '.'.join([config,variable,averaging,gridname,'nc'])
-    savepath = '../data/processed/regridded/'+savename
+    if regrid:
+        savepath = '../data/processed/regridded/'+savename
+    else:
+        savepath = '../data/processed/native/'+savename
     if overwrite:
         try:
             os.remove(savepath)

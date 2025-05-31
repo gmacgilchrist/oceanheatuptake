@@ -3,9 +3,11 @@
 import xarray as xr
 import numpy as np
 import utils.geo as geo
+import os
 
 dlon,dlat = 3,2
-zlevel = 'pressure'
+zlevel = 'pressure' # 'pressure' or 'depth'
+overwrite = True
 
 grid = xr.Dataset()
 lons = dlon/2 + np.arange(0,360,dlon)
@@ -41,8 +43,17 @@ mid_zs = np.append(mid_zs,top)
 dz = xr.DataArray(np.diff(mid_zs),dims='z',coords={'z':target_zs})
 
 grid['area'] = ds['rC']
+grid['dx'] = ds['dxC']
+grid['dy'] = ds['dyC']
 grid['dz'] = dz
 grid['volume'] = grid['area']*grid['dz']
 
 gridname = str(dlon)+'x'+str(dlat)
-grid.to_netcdf('../data/processed/regridded/grid_'+gridname+'_'+zlevel+'.nc')
+
+savepath = '../data/processed/regridded/grid_'+gridname+'_'+zlevel+'.nc'
+if overwrite:
+    try:
+        os.remove(savepath)
+    except OSError:
+        pass
+grid.to_netcdf(savepath)
